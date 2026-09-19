@@ -1,5 +1,6 @@
 package com.pulsepass.domain.enums;
 
-public class EventStatus {
-    
+public enum EventStatus {
+        DRAFT, PUBLISHED, SOLD_OUT, CANCELLED, FINISHED
+
 }

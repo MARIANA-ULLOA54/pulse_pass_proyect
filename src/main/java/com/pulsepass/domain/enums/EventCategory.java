@@ -1,5 +1,7 @@
 package com.pulsepass.domain.enums;
 
-public class EventCategory {
+public enum EventCategory {
     
+    MUSIC, SPORTS, TECHNOLOGY, EDUCATION, CULTURE, ENTERTAINMENT
+
 }
