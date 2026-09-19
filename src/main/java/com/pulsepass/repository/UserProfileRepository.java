@@ -1,5 +1,14 @@
 package com.pulsepass.repository;
 
-public class UserProfileRepository {
-    
+import com.pulsepass.domain.UserProfile;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
+
+    // FR-USR-003 — navega la relacion 1:1
+    Optional<UserProfile> findByUser_Id(Long userId);
+
+    Optional<UserProfile> findByUser_Username(String username);
 }
