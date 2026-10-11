@@ -16,3 +16,4 @@ public record TicketResponse(
     String userEmail,
     LocalDateTime purchaseDate
 ) {}
+
