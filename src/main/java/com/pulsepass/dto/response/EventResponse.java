@@ -1,16 +1,17 @@
 package com.pulsepass.dto.response;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+package com.pulsepass.dto.response;
+import java.time.LocalDate;
+import java.util.List;
 
 public record EventResponse(
     Long id,
-    String title,
+    String eventCode,
+    String name,
     String description,
-    LocalDateTime eventDate,
-    String venueName,
-    String artistName,
-    BigDecimal ticketPrice,
-    Integer totalCapacity,
-    boolean active
+    String category,
+    String status,
+    LocalDate eventDate,
+    Integer minimumAge,
+    String venueCode,
+    List<String> artistNames
 ) {}
