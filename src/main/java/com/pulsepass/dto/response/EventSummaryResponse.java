@@ -7,4 +7,5 @@ public record EventSummaryResponse(
         String name,
         LocalDate eventDate,
         String venueName
-) {}
+) {
+}
