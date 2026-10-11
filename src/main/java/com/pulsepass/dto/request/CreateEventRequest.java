@@ -1,7 +1,5 @@
 package com.pulsepass.dto.request;
 
-package com.pulsepass.dto.request;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -11,11 +9,19 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateEventRequest(
-    @NotBlank(message = "Title is required") String title,
+    String title,
+    String description,
+    LocalDateTime eventDate,
+    Long venueId,
+    Long artistId,
+    BigDecimal ticketPrice,
+    Integer totalCapacity
+
+    @NotBlank(message = "Event code is required") String eventCode,
+    @NotBlank(message = "Name is required") String name,
     @Size(max = 500, message = "Description is too long") String description,
-    @NotNull(message = "Event date is required") LocalDateTime eventDate,
-    @NotNull(message = "Venue is required") Long venueId,
-    @NotNull(message = "Artist is required") Long artistId,
-    @NotNull(message = "Ticket price is required") BigDecimal ticketPrice,
-    @NotNull(message = "Total capacity is required") @Min(value = 1, message = "Total capacity must be at least 1") Integer totalCapacity
+    @NotNull(message = "Category is required") EventCategory category,
+    @NotNull(message = "Event date is required") LocalDate eventDate,
+    @NotNull(message = "Minimum age is required") @Min(value = 0, message = "Minimum age must be >= 0") Integer minimumAge,
+    @NotBlank(message = "Venue code is required") String venueCode)
 ) {}
