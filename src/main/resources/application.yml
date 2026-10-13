@@ -1,5 +1,3 @@
-spring.application.name=pulse_pass_proyect
-
 spring:
   application:
     name: pulsepass
@@ -8,6 +6,7 @@ spring:
     username: postgres
     password: postgres
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: true

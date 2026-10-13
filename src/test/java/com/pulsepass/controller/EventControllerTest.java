@@ -12,21 +12,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.pulsepass.dto.EventResponse;
-import com.pulsepass.dto.EventSummaryResponse;
+import com.pulsepass.dto.response.EventResponse;
+import com.pulsepass.dto.response.EventSummaryResponse;
+import com.pulsepass.domain.enums.TicketStatus;
+import com.pulsepass.domain.enums.TicketType;
+import com.pulsepass.dto.response.TicketResponse;
 import com.pulsepass.exception.BusinessRuleException;
 import com.pulsepass.exception.ResourceNotFoundException;
-import com.pulsepass.model.EventCategory;
-import com.pulsepass.model.EventStatus;
+import com.pulsepass.domain.enums.EventCategory;
+import com.pulsepass.domain.enums.EventStatus;
 import com.pulsepass.service.EventService;
 import com.pulsepass.service.TicketService;
 
@@ -104,5 +109,15 @@ class EventControllerTest {
         when(eventService.findByArtist("Solar Beat")).thenReturn(List.of(summary));
         mvc.perform(get("/api/events/by-artist").param("stageName", "Solar Beat"))
            .andExpect(status().isOk()).andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)));
+    }
+
+    @Test void paidTickets_200() throws Exception {
+        TicketResponse paid = new TicketResponse(1L, "TCK-AB12CD34", TicketType.GENERAL, TicketStatus.PAID,
+            BigDecimal.ZERO, "CMF-2026", "andrea@mail.com", LocalDateTime.now());
+        when(ticketService.findPaidTicketsByEvent("CMF-2026")).thenReturn(List.of(paid));
+        mvc.perform(get("/api/events/CMF-2026/tickets/paid"))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$[0].status").value("PAID"));
+        verify(ticketService).findPaidTicketsByEvent("CMF-2026");
     }
 }

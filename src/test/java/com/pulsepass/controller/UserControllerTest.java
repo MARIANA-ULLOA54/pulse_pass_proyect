@@ -1,12 +1,12 @@
 package com.pulsepass.controller;
 
-import com.pulsepass.dto.UserResponse;
+import com.pulsepass.dto.response.UserResponse;
 import com.pulsepass.exception.DuplicateResourceException;
 import com.pulsepass.service.UserService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 

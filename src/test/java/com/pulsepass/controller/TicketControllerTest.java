@@ -18,13 +18,13 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.pulsepass.dto.TicketResponse;
-import com.pulsepass.enums.TicketStatus;
-import com.pulsepass.enums.TicketType;
+import com.pulsepass.dto.response.TicketResponse;
+import com.pulsepass.domain.enums.TicketStatus;
+import com.pulsepass.domain.enums.TicketType;
 import com.pulsepass.exception.BusinessRuleException;
 import com.pulsepass.exception.ResourceNotFoundException;
 import com.pulsepass.service.TicketService;

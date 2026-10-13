@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
@@ -20,21 +22,21 @@ class UserProfileIT extends AbstractIntegrationTest {
     @DisplayName("Debe guardar un usuario con su perfil asociado")
     void shouldSaveUserWithProfile() {
         User user = new User();
+        user.setUsername("carlos");
         user.setEmail("usuario@example.com");
-        user.setPassword("hashedpassword123");
 
         UserProfile profile = new UserProfile();
         profile.setFirstName("Carlos");
         profile.setLastName("Pérez");
         profile.setPhone("+573001234567");
+        profile.setBirthDate(LocalDate.of(1995, 3, 1));
         profile.setUser(user);
-
         user.setProfile(profile);
 
-        User savedUser = userRepository.save(user);
+        User saved = userRepository.saveAndFlush(user);
 
-        assertThat(savedUser.getId()).isNotNull();
-        assertThat(savedUser.getProfile()).isNotNull();
-        assertThat(savedUser.getProfile().getFirstName()).isEqualTo("Carlos");
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getProfile()).isNotNull();
+        assertThat(saved.getProfile().getFirstName()).isEqualTo("Carlos");
     }
 }
