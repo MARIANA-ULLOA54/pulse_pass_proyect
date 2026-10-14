@@ -1,12 +1,13 @@
-package com.pulsepass.dto.request;
+package com.pulsepass.domain.dto.request;
+
+import java.time.LocalDate;
 
 import com.pulsepass.domain.enums.EventCategory;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import java.time.LocalDate;
 
 public record CreateEventRequest(
         @NotBlank(message = "Event code is required") String eventCode,

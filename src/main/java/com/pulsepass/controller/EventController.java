@@ -1,3 +1,5 @@
+package com.pulsepass.controller;
+
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -12,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pulsepass.dto.CreateEventRequest;
-import com.pulsepass.dto.EventResponse;
-import com.pulsepass.dto.EventSummaryResponse;
-import com.pulsepass.dto.TicketResponse;
+import com.pulsepass.dto.request.CreateEventRequest;
+import com.pulsepass.dto.response.EventResponse;
+import com.pulsepass.dto.response.EventSummaryResponse;
+import com.pulsepass.dto.response.TicketResponse;
 import com.pulsepass.service.EventService;
 import com.pulsepass.service.TicketService;
 

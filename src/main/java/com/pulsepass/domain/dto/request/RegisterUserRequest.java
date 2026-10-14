@@ -1,6 +1,7 @@
-package com.pulsepass.dto.request;
+package com.pulsepass.domain.dto.request;
 
 import java.time.LocalDate;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

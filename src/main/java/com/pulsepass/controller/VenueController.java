@@ -1,3 +1,5 @@
+package com.pulsepass.controller;
+
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -6,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pulsepass.dto.VenueResponse;
+import com.pulsepass.dto.response.VenueResponse;
 import com.pulsepass.service.VenueService;
 
 @RestController
