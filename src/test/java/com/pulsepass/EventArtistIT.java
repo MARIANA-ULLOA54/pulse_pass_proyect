@@ -1,5 +1,13 @@
 package com.pulsepass;
 
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.pulsepass.domain.Artist;
 import com.pulsepass.domain.Event;
 import com.pulsepass.domain.Venue;
@@ -8,14 +16,6 @@ import com.pulsepass.domain.enums.EventStatus;
 import com.pulsepass.repository.ArtistRepository;
 import com.pulsepass.repository.EventRepository;
 import com.pulsepass.repository.VenueRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 class EventArtistIT extends AbstractIntegrationTest {
@@ -62,9 +62,8 @@ class EventArtistIT extends AbstractIntegrationTest {
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getArtists())
-            .hasSize(2)
-            .extracting(Artist::getStageName)
-            .containsExactlyInAnyOrder("Shakira", "Carlos Vives");
+                .extracting(Artist::getStageName)
+                .containsExactlyInAnyOrder("Shakira", "Carlos Vives");
         assertThat(eventRepository.findByArtistsStageName("Shakira")).hasSize(1);
     }
 }
