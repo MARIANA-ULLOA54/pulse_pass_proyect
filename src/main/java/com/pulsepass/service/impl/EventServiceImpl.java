@@ -3,9 +3,12 @@ package com.pulsepass.service.impl;
 import com.pulsepass.domain.Artist;
 import com.pulsepass.domain.Event;
 import com.pulsepass.domain.Venue;
+import com.pulsepass.domain.enums.EventStatus;
 import com.pulsepass.dto.request.CreateEventRequest;
 import com.pulsepass.dto.response.EventResponse;
+import com.pulsepass.dto.response.EventSummaryResponse;
 import com.pulsepass.exception.BusinessRuleException;
+import com.pulsepass.exception.DuplicateResourceException;
 import com.pulsepass.exception.ResourceNotFoundException;
 import com.pulsepass.mapper.EventMapper;
 import com.pulsepass.repository.ArtistRepository;
@@ -15,7 +18,7 @@ import com.pulsepass.service.EventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -39,45 +42,72 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventResponse createEvent(CreateEventRequest request) {
-        if (request.eventDate() != null && request.eventDate().isBefore(LocalDateTime.now())) {
+    public EventResponse create(CreateEventRequest r) {
+        if (eventRepository.findByEventCode(r.eventCode()).isPresent()) {
+            throw new DuplicateResourceException("Event already exists: " + r.eventCode());
+        }
+        if (r.eventDate().isBefore(LocalDate.now())) {
             throw new BusinessRuleException("Event date cannot be in the past");
         }
-
-        Venue venue = venueRepository.findById(request.venueId())
-                .orElseThrow(() -> new ResourceNotFoundException("Venue not found with id: " + request.venueId()));
-
-        Artist artist = artistRepository.findById(request.artistId())
-                .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + request.artistId()));
+        Venue venue = venueRepository.findByCode(r.venueCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Venue not found: " + r.venueCode()));
 
         Event event = new Event();
-        event.setTitle(request.title());
-        event.setDescription(request.description());
-        event.setEventDate(request.eventDate());
+        event.setEventCode(r.eventCode());
+        event.setName(r.name());
+        event.setDescription(r.description());
+        event.setCategory(r.category());
+        event.setEventDate(r.eventDate());
+        event.setMinimumAge(r.minimumAge());
         event.setVenue(venue);
-        event.setArtist(artist);
-        event.setTicketPrice(request.ticketPrice());
-        event.setTotalCapacity(request.totalCapacity());
-        event.setActive(true);
-
-        Event savedEvent = eventRepository.save(event);
-        return eventMapper.toResponse(savedEvent);
+        event.setStatus(EventStatus.DRAFT);
+        return eventMapper.toResponse(eventRepository.save(event));
     }
 
     @Override
-    public EventResponse findById(Long id) {
-        return eventRepository.findById(id)
-                .map(eventMapper::toResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + id));
+    public EventResponse findByCode(String eventCode) {
+        return eventMapper.toResponse(getEvent(eventCode));
     }
 
     @Override
-    public List<EventResponse> findAllActiveEvents() {
-        return eventMapper.toResponseList(eventRepository.findByActiveTrue());
+    public List<EventSummaryResponse> findPublishedEvents() {
+        return eventMapper.toSummaryList(eventRepository.findByStatus(EventStatus.PUBLISHED));
     }
 
     @Override
-    public List<EventResponse> findEventsByVenue(Long venueId) {
-        return eventMapper.toResponseList(eventRepository.findByVenueId(venueId));
+    @Transactional
+    public EventResponse publish(String eventCode) {
+        Event event = getEvent(eventCode);
+        if (event.getStatus() != EventStatus.DRAFT) {
+            throw new BusinessRuleException("Only DRAFT events can be published");
+        }
+        event.setStatus(EventStatus.PUBLISHED);
+        return eventMapper.toResponse(event);
+    }
+
+    @Override
+    @Transactional
+    public EventResponse addArtist(String eventCode, Long artistId) {
+        Event event = getEvent(eventCode);
+        if (event.getStatus() == EventStatus.CANCELLED || event.getStatus() == EventStatus.FINISHED) {
+            throw new BusinessRuleException("Cannot add artists to a " + event.getStatus() + " event");
+        }
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
+        if (event.getArtists().contains(artist)) {
+            throw new BusinessRuleException("Artist already associated to the event");
+        }
+        event.addArtist(artist);
+        return eventMapper.toResponse(event);
+    }
+
+    @Override
+    public List<EventSummaryResponse> findByArtist(String stageName) {
+        return eventMapper.toSummaryList(eventRepository.findByArtistsStageName(stageName));
+    }
+
+    private Event getEvent(String eventCode) {
+        return eventRepository.findByEventCode(eventCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + eventCode));
     }
 }
