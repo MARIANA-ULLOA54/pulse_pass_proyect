@@ -15,12 +15,14 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 public abstract class AbstractIntegrationTest {
 
+    @SuppressWarnings("resource")
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15-alpine")
+    static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15-alpine")
             .withDatabaseName("pulsepass_test")
             .withUsername("test")
             .withPassword("test");
 
+    @SuppressWarnings("unused")
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
