@@ -7,10 +7,6 @@ import com.pulsepass.dto.response.EventSummaryResponse;
 import java.util.List;
 
 public interface EventService {
-    EventResponse createEvent(CreateEventRequest request);
-    EventResponse findById(Long id);
-    List<EventResponse> findAllActiveEvents();
-    List<EventResponse> findEventsByVenue(Long venueId);
     EventResponse create(CreateEventRequest request);
     EventResponse findByCode(String eventCode);
     List<EventSummaryResponse> findPublishedEvents();

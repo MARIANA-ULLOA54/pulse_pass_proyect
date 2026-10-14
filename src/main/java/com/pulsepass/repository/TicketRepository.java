@@ -1,7 +1,7 @@
 package com.pulsepass.repository;
 
 import com.pulsepass.domain.Ticket;
-import com.pulsepass.domain.TicketStatus;
+import com.pulsepass.domain.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
