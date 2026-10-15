@@ -62,7 +62,7 @@ class EventArtistIT extends AbstractIntegrationTest {
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getArtists())
-                .extracting(Artist::getStageName)
+                .extracting("stageName")
                 .containsExactlyInAnyOrder("Shakira", "Carlos Vives");
         assertThat(eventRepository.findByArtistsStageName("Shakira")).hasSize(1);
     }
