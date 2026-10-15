@@ -14,3 +14,9 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+pulsepass:
+  security:
+    jwt:
+      issuer: "pulsepass-api"
+      secret-base64: "${PULSEPASS_JWT_SECRET_BASE64:ZmFrZVNlY3JldEtleUZvclRlc3RpbmdQdXJwb3NlczMyQnl0ZXNNbmltdW0=}"
+      access-token-ttl: 900 # 15 minutos en segundos
