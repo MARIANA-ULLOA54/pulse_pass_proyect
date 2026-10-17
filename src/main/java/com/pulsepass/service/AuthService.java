@@ -1,72 +1,58 @@
 package com.pulsepass.service;
 
-import com.pulsepass.domain.User;
-import com.pulsepass.domain.UserCredential;
-import com.pulsepass.domain.UserRole;
-import com.pulsepass.dto.request.LoginRequest;
-import com.pulsepass.dto.response.AuthResponse;
-import com.pulsepass.dto.response.AuthenticatedUserResponse;
-import com.pulsepass.repository.UserCredentialRepository;
+import com.pulsepass.repository.TicketRepository;
 import com.pulsepass.repository.UserRepository;
-import com.pulsepass.repository.UserRoleRepository;
-import com.pulsepass.security.JwtService;
 import com.pulsepass.security.SecurityPrincipal;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@RequiredArgsConstructor
-public class AuthService {
+import java.util.Optional;
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+/** Políticas de propiedad (anti-IDOR). Se usa desde @PreAuthorize como @authService. */
+@Service("authService")
+@Transactional(readOnly = true)
+public class AuthService{
+
+    private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
-    private final UserCredentialRepository userCredentialRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public AuthResponse login(LoginRequest request) {
-        // Autenticar credenciales usando Spring Security
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.identifier(), request.password())
-        );
-
-        SecurityPrincipal principal = (SecurityPrincipal) authentication.getPrincipal();
-        
-        // Generar token JWT con vigencia de 15 minutos (900 segundos) configurados
-        String token = jwtService.generateToken(principal);
-
-        return new AuthResponse(token, "Bearer", 900);
+    public AuthService(TicketRepository ticketRepository, UserRepository userRepository) {
+        this.ticketRepository = ticketRepository;
+        this.userRepository = userRepository;
     }
 
-    @Transactional
-    public void registerCredentialsAndRole(Long userId, String rawPassword) {
-        UserCredential credential = UserCredential.builder()
-                .userId(userId)
-                .passwordHash(passwordEncoder.encode(rawPassword))
-                .build();
-        userCredentialRepository.save(credential);
-
-        UserRole role = UserRole.builder()
-                .userId(userId)
-                .role("USER") // Rol inicial por defecto exclusivamente USER[cite: 13, 16]
-                .build();
-        userRoleRepository.save(role);
+    public Optional<SecurityPrincipal> currentPrincipal() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof SecurityPrincipal principal) {
+            return Optional.of(principal);
+        }
+        return Optional.empty();
     }
 
-    public AuthenticatedUserResponse getAuthenticatedUser(SecurityPrincipal principal) {
-        return new AuthenticatedUserResponse(
-                principal.getId(),
-                principal.getUsername(),
-                principal.getEmail(),
-                principal.getAuthorities().stream()
-                        .map(a -> a.getAuthority().replace("ROLE_", ""))
-                        .toList()
-        );
+    public boolean isStaffOrAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STAFF") || a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    /** El ticket pertenece al principal (se compara por ID persistente, nunca por el email del request). */
+    public boolean ownsTicket(String ticketCode) {
+        return currentPrincipal()
+                .map(p -> ticketRepository.existsByTicketCodeAndUser_Id(ticketCode, p.getId()))
+                .orElse(false);
+    }
+
+    public boolean isSelfByEmail(String email) {
+        return currentPrincipal()
+                .map(p -> userRepository.existsByEmailAndId(email, p.getId()))
+                .orElse(false);
+    }
+
+    public boolean isSelfByUsername(String username) {
+        return currentPrincipal()
+                .map(p -> userRepository.existsByUsernameAndId(username, p.getId()))
+                .orElse(false);
     }
 }
