@@ -1,37 +1,22 @@
 package com.pulsepass.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pulsepass.dto.response.ErrorResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.MediaType;
+import java.io.IOException;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
-                403,
-                "Forbidden",
-                "No tiene permisos suficientes para realizar esta operación",
-                Map.of()
-        );
-
-        objectMapper.writeValue(response.getWriter(), error);
+            AccessDeniedException accessDeniedException) throws IOException {
+        SecurityErrorWriter.write(response, HttpStatus.FORBIDDEN,
+                "No tiene permisos para realizar esta operación");
     }
 }

@@ -1,58 +1,79 @@
 package com.pulsepass.service;
 
-import com.pulsepass.repository.TicketRepository;
-import com.pulsepass.repository.UserRepository;
+import com.pulsepass.domain.UserCredential;
+import com.pulsepass.domain.UserRole;
+import com.pulsepass.domain.enums.Role;
+import com.pulsepass.dto.request.LoginRequest;
+import com.pulsepass.dto.request.RegisterUserRequest;
+import com.pulsepass.dto.response.AuthResponse;
+import com.pulsepass.dto.response.UserResponse;
+import com.pulsepass.exception.BusinessRuleException;
+import com.pulsepass.repository.UserCredentialRepository;
+import com.pulsepass.repository.UserRoleRepository;
+import com.pulsepass.security.JwtService;
 import com.pulsepass.security.SecurityPrincipal;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
-/** Políticas de propiedad (anti-IDOR). Se usa desde @PreAuthorize como @authService. */
-@Service("authService")
-@Transactional(readOnly = true)
-public class AuthService{
+@Service
+public class AuthService {
 
-    private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final UserCredentialRepository credentialRepository;
+    private final UserRoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
-    public AuthService(TicketRepository ticketRepository, UserRepository userRepository) {
-        this.ticketRepository = ticketRepository;
-        this.userRepository = userRepository;
+    public AuthService(UserService userService,
+            UserCredentialRepository credentialRepository,
+            UserRoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtService jwtService) {
+        this.userService = userService;
+        this.credentialRepository = credentialRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
-    public Optional<SecurityPrincipal> currentPrincipal() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof SecurityPrincipal principal) {
-            return Optional.of(principal);
+    /**
+     * Usuario + hash + ROLE_USER en una sola transacción (si algo falla, no
+     * queda nada).
+     */
+    @Transactional
+    public UserResponse register(RegisterUserRequest request) {
+        if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new BusinessRuleException("Password must not exceed 72 bytes");
         }
-        return Optional.empty();
+        UserResponse created = userService.register(request);
+        credentialRepository.save(new UserCredential(
+                created.id(), passwordEncoder.encode(request.password()), LocalDateTime.now()));
+        roleRepository.save(new UserRole(created.id(), Role.USER));
+        return created;
     }
 
-    public boolean isStaffOrAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_STAFF") || a.getAuthority().equals("ROLE_ADMIN"));
-    }
-
-    /** El ticket pertenece al principal (se compara por ID persistente, nunca por el email del request). */
-    public boolean ownsTicket(String ticketCode) {
-        return currentPrincipal()
-                .map(p -> ticketRepository.existsByTicketCodeAndUser_Id(ticketCode, p.getId()))
-                .orElse(false);
-    }
-
-    public boolean isSelfByEmail(String email) {
-        return currentPrincipal()
-                .map(p -> userRepository.existsByEmailAndId(email, p.getId()))
-                .orElse(false);
-    }
-
-    public boolean isSelfByUsername(String username) {
-        return currentPrincipal()
-                .map(p -> userRepository.existsByUsernameAndId(username, p.getId()))
-                .orElse(false);
+    public AuthResponse login(LoginRequest request) {
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.identifier(), request.password()));
+            SecurityPrincipal principal = (SecurityPrincipal) auth.getPrincipal();
+            return new AuthResponse(jwtService.generateToken(principal.getId()),
+                    "Bearer", jwtService.getExpiresInSeconds());
+        } catch (AuthenticationException e) {
+            // Mensaje genérico: no revela si el usuario existe, está inactivo o la clave falló
+            throw new BadCredentialsException("Invalid credentials");
+        }
     }
 }

@@ -73,4 +73,14 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(), status.value(), status.getReasonPhrase(), message, details);
         return ResponseEntity.status(status).body(body);
     }
+
+    @ExceptionHandler(AccessDeniedException.class)   // org.springframework.security.access.AccessDeniedException
+    public ResponseEntity<ErrorResponse> accessDenied(AccessDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN, "No tiene permisos para realizar esta operación", Map.of());
+    }
+
+    @ExceptionHandler(AuthenticationException.class) // org.springframework.security.core.AuthenticationException
+    public ResponseEntity<ErrorResponse> authentication(AuthenticationException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Credenciales inválidas o ausentes", Map.of());
+    }
 }

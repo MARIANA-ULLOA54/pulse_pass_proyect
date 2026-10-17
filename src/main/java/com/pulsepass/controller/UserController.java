@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pulsepass.dto.request.RegisterUserRequest;
 import com.pulsepass.dto.response.UserResponse;
+import com.pulsepass.service.AuthService;
 import com.pulsepass.service.UserService;
 
 import jakarta.validation.Valid;
@@ -18,15 +19,18 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final UserService userService;
+    private final AuthService authService;
+
+    public UserController(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
     @PostMapping
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @GetMapping("/by-email")

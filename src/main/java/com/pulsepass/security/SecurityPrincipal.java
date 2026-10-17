@@ -1,51 +1,29 @@
 package com.pulsepass.security;
 
-import com.pulsepass.domain.User;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
-import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public class SecurityPrincipal implements UserDetails {
 
     private final Long id;
     private final String username;
-    private final String email;
     private final String passwordHash;
     private final boolean active;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public SecurityPrincipal(User user, String passwordHash, List<String> roles) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.email = user.getEmail();
+    public SecurityPrincipal(Long id, String username, String passwordHash, boolean active,
+            Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.username = username;
         this.passwordHash = passwordHash;
-        // Asumiendo que tu entidad User tiene un campo o método para verificar si está activo; 
-        // de lo contrario, puedes adaptarlo según tu modelo existente de la Fase 1/2.
-        this.active = true; 
-        this.authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .toList();
+        this.active = active;
+        this.authorities = authorities;
     }
 
     public Long getId() {
         return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return passwordHash;
     }
 
     @Override
@@ -54,13 +32,29 @@ public class SecurityPrincipal implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public String getPassword() {
+        return passwordHash;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public String getUsername() {
+        return username;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
     public boolean isEnabled() {

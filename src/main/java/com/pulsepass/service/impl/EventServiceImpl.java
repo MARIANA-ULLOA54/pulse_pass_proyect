@@ -31,9 +31,9 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
 
     public EventServiceImpl(EventRepository eventRepository,
-                            VenueRepository venueRepository,
-                            ArtistRepository artistRepository,
-                            EventMapper eventMapper) {
+            VenueRepository venueRepository,
+            ArtistRepository artistRepository,
+            EventMapper eventMapper) {
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.artistRepository = artistRepository;
@@ -66,7 +66,20 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventResponse findByCode(String eventCode) {
-        return eventMapper.toResponse(getEvent(eventCode));
+        Event event = getEvent(eventCode);
+        if (event.getStatus() != EventStatus.PUBLISHED && !authorizationService.isStaffOrAdmin()) {
+            throw new ResourceNotFoundException("Event not found: " + eventCode); // 404: no revela borradores
+        }
+        return eventMapper.toResponse(event);
+    }
+
+    @Override
+    public List<EventSummaryResponse> findByArtist(String stageName) {
+        boolean privileged = authorizationService.isStaffOrAdmin();
+        List<Event> events = eventRepository.findByArtistsStageName(stageName).stream()
+                .filter(e -> privileged || e.getStatus() == EventStatus.PUBLISHED)
+                .toList();
+        return eventMapper.toSummaryList(events);
     }
 
     @Override
@@ -101,13 +114,9 @@ public class EventServiceImpl implements EventService {
         return eventMapper.toResponse(event);
     }
 
-    @Override
-    public List<EventSummaryResponse> findByArtist(String stageName) {
-        return eventMapper.toSummaryList(eventRepository.findByArtistsStageName(stageName));
-    }
-
     private Event getEvent(String eventCode) {
         return eventRepository.findByEventCode(eventCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + eventCode));
     }
+
 }

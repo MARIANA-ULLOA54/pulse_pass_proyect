@@ -1,30 +1,21 @@
 package com.pulsepass.domain;
 
 import java.io.Serializable;
+import java.util.Objects;
+
+import com.pulsepass.domain.enums.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "user_roles")
-@IdClass(UserRoleId.class)
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@IdClass(UserRole.Pk.class)
 public class UserRole {
 
     @Id
@@ -32,19 +23,53 @@ public class UserRole {
     private Long userId;
 
     @Id
-    @Column(name = "role")
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20)
+    private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private User user;
-}
+    protected UserRole() {
+    }
 
-// Clase auxiliar para la clave compuesta de UserRole
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class UserRoleId implements Serializable {
-    private Long userId;
-    private String role;
+    public UserRole(Long userId, Role role) {
+        this.userId = userId;
+        this.role = role;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public static class Pk implements Serializable {
+
+        private Long userId;
+        private Role role;
+
+        public Pk() {
+        }
+
+        public Pk(Long userId, Role role) {
+            this.userId = userId;
+            this.role = role;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Pk other)) {
+                return false;
+            }
+            return Objects.equals(userId, other.userId) && role == other.role;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(userId, role);
+        }
+    }
 }
