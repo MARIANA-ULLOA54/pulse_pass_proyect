@@ -1,5 +1,14 @@
 package com.pulsepass.controller;
 
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
+import com.pulsepass.security.CustomUserDetailsService;
+import com.pulsepass.security.JwtService;
+import com.pulsepass.security.RestAccessDeniedHandler;
+import com.pulsepass.security.RestAuthenticationEntryPoint;
+import com.pulsepass.security.SecurityConfig;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,6 +45,13 @@ import com.pulsepass.service.EventService;
 import com.pulsepass.service.TicketService;
 
 @WebMvcTest(EventController.class)
+@MockitoBean(types = {JwtService.class, CustomUserDetailsService.class})
+@Import({SecurityConfig.class, RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class})
+@TestPropertySource(properties = {
+    "pulsepass.security.jwt.secret-base64=cHVsc2VwYXNzLXRlc3Qtc2VjcmV0LWtleS0zMmJ5dGVzISE=",
+    "pulsepass.security.jwt.issuer=pulsepass-test",
+    "pulsepass.security.jwt.access-token-ttl=PT15M"})
+@WithMockUser(roles = "ADMIN")
 class EventControllerTest {
     @Autowired MockMvc mvc;
     @MockitoBean EventService eventService;

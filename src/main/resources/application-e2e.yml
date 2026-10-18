@@ -1,0 +1,13 @@
+# Perfil E2E (Fase 5): spring.profiles.active=e2e
+# Base dedicada pulsepass_e2e. El secreto JWT es OBLIGATORIO por entorno (sin valor por defecto).
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/pulsepass_e2e}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    show-sql: false
+pulsepass:
+  security:
+    jwt:
+      secret-base64: "${PULSEPASS_JWT_SECRET_BASE64}"
