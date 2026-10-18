@@ -14,6 +14,7 @@ import com.pulsepass.mapper.EventMapper;
 import com.pulsepass.repository.ArtistRepository;
 import com.pulsepass.repository.EventRepository;
 import com.pulsepass.repository.VenueRepository;
+import com.pulsepass.service.AuthorizationService;
 import com.pulsepass.service.EventService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,15 +30,18 @@ public class EventServiceImpl implements EventService {
     private final VenueRepository venueRepository;
     private final ArtistRepository artistRepository;
     private final EventMapper eventMapper;
+    private final AuthorizationService authorizationService;
 
     public EventServiceImpl(EventRepository eventRepository,
             VenueRepository venueRepository,
             ArtistRepository artistRepository,
-            EventMapper eventMapper) {
+            EventMapper eventMapper,
+            AuthorizationService authorizationService) {
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.artistRepository = artistRepository;
         this.eventMapper = eventMapper;
+        this.authorizationService = authorizationService;
     }
 
     @Override

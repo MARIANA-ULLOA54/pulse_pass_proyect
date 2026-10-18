@@ -1,14 +1,18 @@
 package com.pulsepass.service;
 
+import com.pulsepass.domain.User;
 import com.pulsepass.domain.UserCredential;
 import com.pulsepass.domain.UserRole;
 import com.pulsepass.domain.enums.Role;
 import com.pulsepass.dto.request.LoginRequest;
 import com.pulsepass.dto.request.RegisterUserRequest;
 import com.pulsepass.dto.response.AuthResponse;
+import com.pulsepass.dto.response.AuthenticatedUserResponse;
 import com.pulsepass.dto.response.UserResponse;
 import com.pulsepass.exception.BusinessRuleException;
+import com.pulsepass.exception.ResourceNotFoundException;
 import com.pulsepass.repository.UserCredentialRepository;
+import com.pulsepass.repository.UserRepository;
 import com.pulsepass.repository.UserRoleRepository;
 import com.pulsepass.security.JwtService;
 import com.pulsepass.security.SecurityPrincipal;
@@ -23,11 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AuthService {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final UserCredentialRepository credentialRepository;
     private final UserRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,12 +41,14 @@ public class AuthService {
     private final JwtService jwtService;
 
     public AuthService(UserService userService,
+            UserRepository userRepository,
             UserCredentialRepository credentialRepository,
             UserRoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.credentialRepository = credentialRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -48,10 +56,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    /**
-     * Usuario + hash + ROLE_USER en una sola transacción (si algo falla, no
-     * queda nada).
-     */
+    /** Usuario + hash + ROLE_USER en una sola transacción (si algo falla, no queda nada). */
     @Transactional
     public UserResponse register(RegisterUserRequest request) {
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
@@ -75,5 +80,16 @@ public class AuthService {
             // Mensaje genérico: no revela si el usuario existe, está inactivo o la clave falló
             throw new BadCredentialsException("Invalid credentials");
         }
+    }
+
+    /** Datos mínimos del usuario autenticado (GET /api/auth/me). */
+    @Transactional(readOnly = true)
+    public AuthenticatedUserResponse getAuthenticatedUser(SecurityPrincipal principal) {
+        User user = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + principal.getId()));
+        List<String> roles = principal.getAuthorities().stream()
+                .map(a -> a.getAuthority().replaceFirst("^ROLE_", ""))
+                .toList();
+        return new AuthenticatedUserResponse(user.getId(), user.getUsername(), user.getEmail(), roles);
     }
 }

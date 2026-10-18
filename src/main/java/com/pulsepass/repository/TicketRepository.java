@@ -13,7 +13,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByEventId(Long eventId);
     long countByEventId(Long eventId);
     Optional<Ticket> findByTicketCode(String ticketCode);
-    boolean existsByTicketCodeAndUser_Id(String ticketCode, Long userId);
+    boolean existsByTicketCodeAndUserId(String ticketCode, Long userId);
     List<Ticket> findByUserEmail(String email);
     List<Ticket> findByEventEventCodeAndStatus(String eventCode, TicketStatus status);
     long countByEventIdAndStatusIn(Long eventId, Collection<TicketStatus> statuses);

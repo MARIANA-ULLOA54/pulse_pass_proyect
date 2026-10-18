@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Email is already registered: " + request.email());
         }
 
-        if (request.birthDate() != null && request.birthDate().isAfter(LocalDate.now())) {
+        if (request.birthDate().isAfter(LocalDate.now())) {
             throw new BusinessRuleException("Birth date cannot be in the future");
         }
 
