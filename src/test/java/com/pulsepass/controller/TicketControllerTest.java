@@ -39,6 +39,7 @@ import com.pulsepass.exception.ResourceNotFoundException;
 import com.pulsepass.service.TicketService;
 
 @WebMvcTest(TicketController.class)
+@MockitoBean(types = {JwtService.class, CustomUserDetailsService.class})
 @Import({SecurityConfig.class, RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class})
 @TestPropertySource(properties = {
     "pulsepass.security.jwt.secret-base64=cHVsc2VwYXNzLXRlc3Qtc2VjcmV0LWtleS0zMmJ5dGVzISE=",
@@ -46,11 +47,6 @@ import com.pulsepass.service.TicketService;
     "pulsepass.security.jwt.access-token-ttl=PT15M"})
 @WithMockUser(roles = "ADMIN")
 class TicketControllerTest {
-    @MockitoBean
-    JwtService jwtService;
-    @MockitoBean
-    CustomUserDetailsService userDetailsService;
-
     @Autowired
     MockMvc mvc;
 

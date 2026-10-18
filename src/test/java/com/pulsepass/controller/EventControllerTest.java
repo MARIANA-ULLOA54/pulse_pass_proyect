@@ -45,6 +45,7 @@ import com.pulsepass.service.EventService;
 import com.pulsepass.service.TicketService;
 
 @WebMvcTest(EventController.class)
+@MockitoBean(types = {JwtService.class, CustomUserDetailsService.class})
 @Import({SecurityConfig.class, RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class})
 @TestPropertySource(properties = {
     "pulsepass.security.jwt.secret-base64=cHVsc2VwYXNzLXRlc3Qtc2VjcmV0LWtleS0zMmJ5dGVzISE=",
@@ -52,11 +53,6 @@ import com.pulsepass.service.TicketService;
     "pulsepass.security.jwt.access-token-ttl=PT15M"})
 @WithMockUser(roles = "ADMIN")
 class EventControllerTest {
-    @MockitoBean
-    JwtService jwtService;
-    @MockitoBean
-    CustomUserDetailsService userDetailsService;
-
     @Autowired MockMvc mvc;
     @MockitoBean EventService eventService;
     @MockitoBean TicketService ticketService;
