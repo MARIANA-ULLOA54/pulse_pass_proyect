@@ -1,8 +1,9 @@
 spring:
-  application:
-    name: pulsepass
   datasource:
-    url: jdbc:postgresql://localhost:5432/pulsepass
+    url: jdbc:tc:postgresql:15:///pulsepass_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  flyway:
+    url: jdbc:tc:postgresql:15:///pulsepass_test
     username: postgres
     password: postgres
   jpa:
