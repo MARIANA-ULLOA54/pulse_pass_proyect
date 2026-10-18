@@ -1,11 +1,8 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:15:///pulsepass_test
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-  flyway:
-    url: jdbc:tc:postgresql:15:///pulsepass_test
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/pulsepass}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
   jpa:
     open-in-view: false
     hibernate:

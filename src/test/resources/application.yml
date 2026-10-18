@@ -1,0 +1,18 @@
+# Configuración de pruebas: sustituye a src/main/resources/application.yml en el classpath de test.
+# Las pruebas usan Testcontainers (requiere Docker). Flyway usa el mismo DataSource.
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:15:///pulsepass_test
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+pulsepass:
+  security:
+    jwt:
+      issuer: "pulsepass-api"
+      secret-base64: "ZmFrZVNlY3JldEtleUZvclRlc3RpbmdQdXJwb3NlczMyQnl0ZXNNbmltdW0="
+      access-token-ttl: 900
