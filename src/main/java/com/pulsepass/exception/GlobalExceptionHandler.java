@@ -1,9 +1,14 @@
 package com.pulsepass.exception;
 
-import com.pulsepass.dto.response.ErrorResponse;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -12,9 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.pulsepass.dto.response.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
